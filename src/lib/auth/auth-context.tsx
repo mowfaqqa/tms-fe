@@ -2,7 +2,6 @@
 
 import {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useMemo,
@@ -28,14 +27,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Hydrate from localStorage on mount.
+  // Hydrate from localStorage on mount. localStorage is an external store that
+  // is only available client-side after mount, so this must run in an effect.
   useEffect(() => {
     const token = getToken();
     const storedUser = getStoredUser();
-    if (token && storedUser) {
-      setUser(storedUser);
-    }
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setUser(token && storedUser ? storedUser : null);
     setLoading(false);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const login = async (email: string, password: string) => {

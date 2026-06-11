@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tenancy Manager — Frontend (`tms-fe`)
 
-## Getting Started
+Web app for the **A.T Tenancy Reminder & Notice Management System**. Property
+managers and admin staff use it to track tenancy expiry, act on automated
+reminders, manage tenants, and issue notices. It talks to the [`tms-be`](../tms-be)
+backend API.
 
-First, run the development server:
+## Stack
+- **Next.js** (App Router) + **TypeScript** + **Tailwind v4**
+- **shadcn/ui** (Radix) components, **lucide** icons
+- **TanStack Query** for server state, **axios** API client
+- **react-hook-form + zod** forms, **sonner** toasts, **date-fns**
 
+## Features
+- JWT auth (login, forgot/reset password) with client-side route guarding and
+  role-aware UI (`ADMIN` vs `STAFF`).
+- **Dashboard** — metric cards (active, expiring 6m/3m/30d, expired) and an
+  Upcoming Actions table with one-click reminder acknowledgement; admins can
+  trigger the reminder sweep.
+- **Tenants** — searchable, filterable, paginated list; detail view with the
+  reminders timeline and issued notices; create/edit forms.
+- **Notices** — generate quit/renewal/general notices, edit drafts, issue them
+  (emails the tenant), and download the PDF.
+- **Notifications** — list with unread filtering, mark-read / mark-all-read, and
+  a live unread badge in the topbar.
+- **Reports** — upcoming expirations, active, and expired tenants, with CSV
+  export.
+
+## Getting started
+
+**1. Start the backend** (in `../tms-be`):
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+docker compose up -d --build   # API on http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**2. Configure and run the frontend:**
+```bash
+cp .env.example .env.local      # NEXT_PUBLIC_API_URL=http://localhost:3000
+npm install
+npm run dev -- -p 3001          # use a port other than the backend's 3000
+```
+Open `http://localhost:3001` and sign in with the seeded admin
+(`admin@example.com` / `ChangeMe123!`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+> The backend occupies port 3000, so run the frontend on another port (e.g.
+> 3001). `NEXT_PUBLIC_API_URL` should point at the backend (3000).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Scripts
+| Command | Description |
+|---|---|
+| `npm run dev` | Dev server (add `-- -p 3001` to avoid the backend's port) |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | Lint |
 
-## Learn More
+## Project structure
+```
+src/
+  app/
+    (auth)/        login, forgot-password, reset-password
+    (app)/         guarded shell: dashboard, tenants, notices, notifications, reports
+  components/
+    ui/            shadcn primitives
+    layout/        sidebar, topbar
+    shared/        page header, status badge, pagination, empty state, confirm dialog
+    tenants/ notices/ dashboard/ reports/   feature components
+  lib/
+    api/           axios client + per-domain API modules
+    hooks/         React Query hooks
+    auth/          auth context + token storage
+    types.ts labels.ts format.ts query-keys.ts csv.ts
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Configuration
+| Variable | Default | Purpose |
+|---|---|---|
+| `NEXT_PUBLIC_API_URL` | `http://localhost:3000` | Backend API base URL |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The full API contract this app is built against is documented in
+[`../tms-be/docs/FRONTEND_GUIDE.md`](../tms-be/docs/FRONTEND_GUIDE.md).
