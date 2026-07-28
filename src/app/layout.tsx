@@ -16,9 +16,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Tenancy Manager',
+  title: 'A.T. Tenancy Manager',
   description:
-    'Tenancy Reminder & Notice Management System — track tenancy expiry and automate reminders.',
+    'A.T. Abdulkadiri & Co. — Tenancy Reminder & Notice Management System. Track tenancy expiry and automate reminders.',
 };
 
 export default function RootLayout({

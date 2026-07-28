@@ -21,6 +21,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { EmptyState } from '@/components/shared/empty-state';
+import { useProperties } from '@/lib/hooks/use-properties';
 import type { TenantPayload } from '@/lib/api/tenants';
 
 const schema = z
@@ -28,8 +30,7 @@ const schema = z
     fullName: z.string().min(1, 'Full name is required'),
     phoneNumber: z.string().min(1, 'Phone number is required'),
     email: z.string().email('Enter a valid email'),
-    propertyAddress: z.string().min(1, 'Property address is required'),
-    unitNumber: z.string().min(1, 'Unit number is required'),
+    propertyId: z.string().min(1, 'Property is required'),
     tenancyStartDate: z.string().min(1, 'Start date is required'),
     tenancyEndDate: z.string().min(1, 'End date is required'),
     rentAmount: z
@@ -51,8 +52,7 @@ const EMPTY: TenantFormValues = {
   fullName: '',
   phoneNumber: '',
   email: '',
-  propertyAddress: '',
-  unitNumber: '',
+  propertyId: '',
   tenancyStartDate: '',
   tenancyEndDate: '',
   rentAmount: '',
@@ -74,6 +74,9 @@ export function TenantForm({
   onSubmit: (payload: TenantPayload) => void;
   onCancel?: () => void;
 }) {
+  const { data: properties, isLoading: propertiesLoading } = useProperties({
+    limit: 100,
+  });
   const form = useForm<TenantFormValues>({
     resolver: zodResolver(schema),
     defaultValues: { ...EMPTY, ...defaultValues },
@@ -84,8 +87,7 @@ export function TenantForm({
       fullName: values.fullName,
       phoneNumber: values.phoneNumber,
       email: values.email,
-      propertyAddress: values.propertyAddress,
-      unitNumber: values.unitNumber,
+      propertyId: values.propertyId,
       tenancyStartDate: values.tenancyStartDate,
       tenancyEndDate: values.tenancyEndDate,
       rentAmount: Number(values.rentAmount),
@@ -93,6 +95,19 @@ export function TenantForm({
     };
     onSubmit(payload);
   };
+
+  if (
+    !propertiesLoading &&
+    (!properties || properties.data.length === 0) &&
+    !defaultValues?.propertyId
+  ) {
+    return (
+      <EmptyState
+        title="No properties available"
+        description="Ask an admin to add a property (and assign it to you, if you're staff) before registering a tenant."
+      />
+    );
+  }
 
   return (
     <Form {...form}>
@@ -151,26 +166,24 @@ export function TenantForm({
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField
               control={form.control}
-              name="propertyAddress"
+              name="propertyId"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Property address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="12 Marina Road, Lagos" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="unitNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Unit number</FormLabel>
-                  <FormControl>
-                    <Input placeholder="A3" {...field} />
-                  </FormControl>
+                <FormItem className="sm:col-span-2">
+                  <FormLabel>Property</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select a property" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {properties?.data.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.address}, Unit {p.unitNumber}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

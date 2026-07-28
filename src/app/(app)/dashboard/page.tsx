@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import {
   AlarmClock,
+  Building2,
   CalendarClock,
   CalendarX,
+  DoorOpen,
   Plus,
   RefreshCw,
   Users,
@@ -108,6 +110,28 @@ export default function DashboardPage() {
           icon={CalendarX}
           href="/tenants?expiring=expired"
           tone="danger"
+          loading={isLoading}
+        />
+        <MetricCard
+          label="Total Properties"
+          value={metrics?.totalProperties ?? 0}
+          icon={Building2}
+          href="/properties"
+          loading={isLoading}
+        />
+        <MetricCard
+          label="Occupied Properties"
+          value={metrics?.occupiedProperties ?? 0}
+          icon={DoorOpen}
+          href="/properties?occupancy=occupied"
+          loading={isLoading}
+        />
+        <MetricCard
+          label="Vacant Properties"
+          value={metrics?.vacantProperties ?? 0}
+          icon={DoorOpen}
+          href="/properties?occupancy=vacant"
+          tone="warning"
           loading={isLoading}
         />
       </div>

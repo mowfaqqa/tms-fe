@@ -85,7 +85,7 @@ export default function TenantDetailPage() {
     <>
       <PageHeader
         title={tenant.fullName}
-        description={`${tenant.propertyAddress} · Unit ${tenant.unitNumber}`}
+        description={`${tenant.property?.address} · Unit ${tenant.property?.unitNumber}`}
         actions={
           <>
             <Button variant="ghost" onClick={() => router.push('/tenants')}>
@@ -139,7 +139,14 @@ export default function TenantDetailPage() {
           <InfoRow
             icon={MapPin}
             label="Property"
-            value={`${tenant.propertyAddress}, Unit ${tenant.unitNumber}`}
+            value={
+              <Link
+                href={`/properties/${tenant.propertyId}`}
+                className="hover:underline"
+              >
+                {tenant.property?.address}, Unit {tenant.property?.unitNumber}
+              </Link>
+            }
           />
           <Separator className="sm:col-span-2 lg:col-span-3" />
           <InfoRow

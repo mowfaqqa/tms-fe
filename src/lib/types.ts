@@ -12,6 +12,18 @@ export type NotificationChannel = 'DASHBOARD' | 'EMAIL';
 export type NoticeType = 'QUIT' | 'RENEWAL' | 'GENERAL';
 export type NoticeStatus = 'DRAFT' | 'ISSUED';
 export type ExpiringFilter = '6m' | '3m' | '30d' | 'expired';
+export type OccupancyStatus = 'VACANT' | 'OCCUPIED';
+export type ActivityAction =
+  | 'PROPERTY_CREATED'
+  | 'PROPERTY_UPDATED'
+  | 'TENANT_CREATED'
+  | 'TENANT_UPDATED'
+  | 'STAFF_CREATED'
+  | 'STAFF_UPDATED'
+  | 'STAFF_DEACTIVATED'
+  | 'STAFF_REACTIVATED'
+  | 'PROPERTY_ASSIGNED'
+  | 'PROPERTY_UNASSIGNED';
 
 export interface AuthUser {
   id: string;
@@ -23,6 +35,24 @@ export interface AuthUser {
 export interface LoginResponse {
   accessToken: string;
   user: AuthUser;
+}
+
+export interface Property {
+  id: string;
+  address: string;
+  unitNumber: string;
+  label: string | null;
+  activeTenantCount: number;
+  occupancyStatus: OccupancyStatus;
+  createdById: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PropertyRef {
+  id: string;
+  address: string;
+  unitNumber: string;
 }
 
 export interface Reminder {
@@ -41,8 +71,8 @@ export interface Tenant {
   fullName: string;
   phoneNumber: string;
   email: string;
-  propertyAddress: string;
-  unitNumber: string;
+  propertyId: string;
+  property?: PropertyRef;
   tenancyStartDate: string;
   tenancyEndDate: string;
   rentAmount: string; // decimal serialized as string
@@ -56,7 +86,7 @@ export interface Tenant {
 export interface NotificationTenantRef {
   id: string;
   fullName: string;
-  propertyAddress: string;
+  property?: PropertyRef;
 }
 
 export interface AppNotification {
@@ -96,6 +126,40 @@ export interface DashboardMetrics {
   expiringWithin3Months: number;
   expiringWithin30Days: number;
   expiredTenancies: number;
+  totalProperties: number;
+  occupiedProperties: number;
+  vacantProperties: number;
+}
+
+export interface StaffAssignment {
+  id: string;
+  propertyId: string;
+  staffId: string;
+  assignedById: string | null;
+  createdAt: string;
+  property: Property;
+}
+
+export interface StaffUser {
+  id: string;
+  fullName: string;
+  email: string;
+  role: Role;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  staffAssignments: StaffAssignment[];
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  actorId: string | null;
+  actor?: { id: string; fullName: string; email: string } | null;
+  action: ActivityAction;
+  entityType: string;
+  entityId: string | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
 }
 
 export interface UpcomingAction {
@@ -109,12 +173,22 @@ export interface UpcomingAction {
   actionStatus: ReminderStatus;
 }
 
-export interface ReportResponse {
+export interface ReportResponse<T = Tenant> {
   report: string;
   generatedAt: string;
   params: Record<string, unknown>;
   count: number;
-  rows: Tenant[];
+  rows: T[];
+}
+
+export type StaffActivityRow = ActivityLogEntry;
+
+export interface AssignedPropertiesRow {
+  id: string;
+  fullName: string;
+  email: string;
+  isActive: boolean;
+  staffAssignments: { property: Property }[];
 }
 
 export interface PaginationMeta {
