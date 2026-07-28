@@ -20,8 +20,7 @@ export interface TenantPayload {
   fullName: string;
   phoneNumber: string;
   email: string;
-  propertyAddress: string;
-  unitNumber: string;
+  propertyId: string;
   tenancyStartDate: string;
   tenancyEndDate: string;
   rentAmount: number;

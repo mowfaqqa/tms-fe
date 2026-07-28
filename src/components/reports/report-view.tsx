@@ -1,6 +1,5 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
 import { Download, ScrollText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,21 +12,33 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
-import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
 import { useReport } from '@/lib/hooks/use-reports';
-import type { ReportKey } from '@/lib/api/reports';
-import { exportTenantsToCsv } from '@/lib/csv';
-import { formatDate, formatMoney } from '@/lib/format';
+import type { ReportKey, ReportRowTypes } from '@/lib/api/reports';
 
-export function ReportView({
+export interface ReportColumn<T> {
+  header: string;
+  render: (row: T) => React.ReactNode;
+  align?: 'left' | 'right';
+}
+
+export function ReportView<K extends ReportKey>({
   reportKey,
   filename,
+  columns,
+  rowKey,
+  onRowClick,
+  exportCsv,
+  enabled = true,
 }: {
-  reportKey: ReportKey;
+  reportKey: K;
   filename: string;
+  columns: ReportColumn<ReportRowTypes[K]>[];
+  rowKey: (row: ReportRowTypes[K]) => string;
+  onRowClick?: (row: ReportRowTypes[K]) => void;
+  exportCsv?: (rows: ReportRowTypes[K][], filename: string) => void;
+  enabled?: boolean;
 }) {
-  const router = useRouter();
-  const { data, isLoading } = useReport(reportKey);
+  const { data, isLoading } = useReport(reportKey, enabled);
 
   if (isLoading) {
     return (
@@ -55,51 +66,49 @@ export function ReportView({
         <p className="text-sm text-muted-foreground">
           {data.count} record{data.count === 1 ? '' : 's'}
         </p>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => exportTenantsToCsv(data.rows, filename)}
-        >
-          <Download className="size-4" />
-          Export CSV
-        </Button>
+        {exportCsv ? (
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => exportCsv(data.rows, filename)}
+          >
+            <Download className="size-4" />
+            Export CSV
+          </Button>
+        ) : null}
       </div>
 
       <div className="overflow-x-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tenant</TableHead>
-              <TableHead>Property</TableHead>
-              <TableHead>Tenancy End</TableHead>
-              <TableHead className="text-right">Rent</TableHead>
-              <TableHead>Status</TableHead>
+              {columns.map((col) => (
+                <TableHead
+                  key={col.header}
+                  className={col.align === 'right' ? 'text-right' : undefined}
+                >
+                  {col.header}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.rows.map((t) => (
+            {data.rows.map((row) => (
               <TableRow
-                key={t.id}
-                className="cursor-pointer"
-                onClick={() => router.push(`/tenants/${t.id}`)}
+                key={rowKey(row)}
+                className={onRowClick ? 'cursor-pointer' : undefined}
+                onClick={() => onRowClick?.(row)}
               >
-                <TableCell>
-                  <div className="font-medium">{t.fullName}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {t.phoneNumber}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {t.propertyAddress}
-                  <span className="text-muted-foreground"> · {t.unitNumber}</span>
-                </TableCell>
-                <TableCell>{formatDate(t.tenancyEndDate)}</TableCell>
-                <TableCell className="text-right tabular-nums">
-                  {formatMoney(t.rentAmount)}
-                </TableCell>
-                <TableCell>
-                  <TenantStatusBadge status={t.status} />
-                </TableCell>
+                {columns.map((col) => (
+                  <TableCell
+                    key={col.header}
+                    className={
+                      col.align === 'right' ? 'text-right tabular-nums' : undefined
+                    }
+                  >
+                    {col.render(row)}
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>

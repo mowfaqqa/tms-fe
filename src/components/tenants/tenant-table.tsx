@@ -42,9 +42,9 @@ export function TenantTable({ tenants }: { tenants: Tenant[] }) {
                 </div>
               </TableCell>
               <TableCell>
-                <div>{t.propertyAddress}</div>
+                <div>{t.property?.address}</div>
                 <div className="text-xs text-muted-foreground">
-                  Unit {t.unitNumber}
+                  Unit {t.property?.unitNumber}
                 </div>
               </TableCell>
               <TableCell>

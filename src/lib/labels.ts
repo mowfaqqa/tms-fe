@@ -1,6 +1,8 @@
 import type {
+  ActivityAction,
   NoticeStatus,
   NoticeType,
+  OccupancyStatus,
   ReminderStatus,
   ReminderType,
   TenantStatus,
@@ -53,4 +55,27 @@ export const REMINDER_STATUS_TONE: Record<ReminderStatus, BadgeTone> = {
 export const NOTICE_STATUS_TONE: Record<NoticeStatus, BadgeTone> = {
   DRAFT: 'outline',
   ISSUED: 'success',
+};
+
+export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
+  VACANT: 'Vacant',
+  OCCUPIED: 'Occupied',
+};
+
+export const OCCUPANCY_STATUS_TONE: Record<OccupancyStatus, BadgeTone> = {
+  VACANT: 'secondary',
+  OCCUPIED: 'success',
+};
+
+export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
+  PROPERTY_CREATED: 'Property created',
+  PROPERTY_UPDATED: 'Property updated',
+  TENANT_CREATED: 'Tenant created',
+  TENANT_UPDATED: 'Tenant updated',
+  STAFF_CREATED: 'Staff created',
+  STAFF_UPDATED: 'Staff updated',
+  STAFF_DEACTIVATED: 'Staff deactivated',
+  STAFF_REACTIVATED: 'Staff reactivated',
+  PROPERTY_ASSIGNED: 'Property assigned',
+  PROPERTY_UNASSIGNED: 'Property unassigned',
 };

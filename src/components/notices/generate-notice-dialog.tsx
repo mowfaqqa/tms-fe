@@ -134,7 +134,7 @@ export function GenerateNoticeDialog({
                 <SelectContent>
                   {tenantsData?.data.map((t) => (
                     <SelectItem key={t.id} value={t.id}>
-                      {t.fullName} — {t.propertyAddress}
+                      {t.fullName} — {t.property?.address}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -7,21 +7,20 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/page-header';
-import { TenantForm } from '@/components/tenants/tenant-form';
-import { useTenant, useUpdateTenant } from '@/lib/hooks/use-tenants';
+import { PropertyForm } from '@/components/properties/property-form';
+import { useProperty, useUpdateProperty } from '@/lib/hooks/use-properties';
 import { getApiErrorMessage } from '@/lib/api/errors';
 
-export default function EditTenantPage() {
+export default function EditPropertyPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
-  const { data: tenant, isLoading } = useTenant(id);
-  const updateTenant = useUpdateTenant(id);
+  const { data: property, isLoading } = useProperty(id);
+  const updateProperty = useUpdateProperty(id);
 
   return (
     <>
       <PageHeader
-        title="Edit tenant"
-        description="Changing the tenancy end date recalculates the reminders."
+        title="Edit property"
         actions={
           <Button variant="outline" onClick={() => router.back()}>
             <ArrowLeft className="size-4" />
@@ -31,33 +30,26 @@ export default function EditTenantPage() {
       />
       <Card>
         <CardContent>
-          {isLoading || !tenant ? (
+          {isLoading || !property ? (
             <div className="space-y-4">
-              <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-10 w-full" />
             </div>
           ) : (
-            <TenantForm
-              showStatus
+            <PropertyForm
               submitLabel="Save changes"
-              submitting={updateTenant.isPending}
-              onCancel={() => router.push(`/tenants/${id}`)}
+              submitting={updateProperty.isPending}
+              onCancel={() => router.push(`/properties/${id}`)}
               defaultValues={{
-                fullName: tenant.fullName,
-                phoneNumber: tenant.phoneNumber,
-                email: tenant.email,
-                propertyId: tenant.propertyId,
-                tenancyStartDate: tenant.tenancyStartDate.slice(0, 10),
-                tenancyEndDate: tenant.tenancyEndDate.slice(0, 10),
-                rentAmount: String(tenant.rentAmount),
-                status: tenant.status,
+                address: property.address,
+                unitNumber: property.unitNumber,
+                label: property.label ?? '',
               }}
               onSubmit={(payload) =>
-                updateTenant.mutate(payload, {
+                updateProperty.mutate(payload, {
                   onSuccess: () => {
-                    toast.success('Tenant updated.');
-                    router.push(`/tenants/${id}`);
+                    toast.success('Property updated.');
+                    router.push(`/properties/${id}`);
                   },
                   onError: (e) => toast.error(getApiErrorMessage(e)),
                 })
