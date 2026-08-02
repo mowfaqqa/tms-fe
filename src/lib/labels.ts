@@ -1,5 +1,7 @@
 import type {
   ActivityAction,
+  IdentificationType,
+  MaritalStatus,
   NoticeStatus,
   NoticeType,
   OccupancyStatus,
@@ -25,6 +27,20 @@ export const TENANT_STATUS_LABELS: Record<TenantStatus, string> = {
   ACTIVE: 'Active',
   EXPIRED: 'Expired',
   RENEWED: 'Renewed',
+};
+
+export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
+  SINGLE: 'Single',
+  MARRIED: 'Married',
+  DIVORCED: 'Divorced',
+  WIDOWED: 'Widowed',
+  SEPARATED: 'Separated',
+};
+
+export const IDENTIFICATION_TYPE_LABELS: Record<IdentificationType, string> = {
+  DRIVERS_LICENSE: "Driver's License",
+  INTERNATIONAL_PASSPORT: 'International Passport',
+  NATIONAL_ID: 'National ID',
 };
 
 export const NOTICE_TYPE_LABELS: Record<NoticeType, string> = {
