@@ -1,6 +1,8 @@
 import { api } from './client';
 import type {
   ExpiringFilter,
+  IdentificationType,
+  MaritalStatus,
   Notice,
   Paginated,
   Reminder,
@@ -25,6 +27,38 @@ export interface TenantPayload {
   tenancyEndDate: string;
   rentAmount: number;
   status?: TenantStatus;
+  // Acquaintance-form fields — all optional. Send null to clear a stored value.
+  age?: number | null;
+  profession?: string | null;
+  nationality?: string | null;
+  homeAddress?: string | null;
+  officeAddress?: string | null;
+  officePhoneNumber?: string | null;
+  maritalStatus?: MaritalStatus | null;
+  stateOfOrigin?: string | null;
+  lga?: string | null;
+  spouseName?: string | null;
+  spouseOfficeAddress?: string | null;
+  spousePhoneNumber?: string | null;
+  numberOfChildren?: number | null;
+  numberOfDependants?: number | null;
+  identificationType?: IdentificationType | null;
+  identificationNumber?: string | null;
+  lastResidentialAddress?: string | null;
+  reasonForLeaving?: string | null;
+  applicantSignature?: string | null;
+  applicantSignedAt?: string | null;
+  agentName?: string | null;
+  refereeName?: string | null;
+  refereeProfession?: string | null;
+  refereeAddress?: string | null;
+  refereePhoneNumber?: string | null;
+  refereeSignature?: string | null;
+  refereeSignedAt?: string | null;
+  serviceCharge?: number | null;
+  generalRemark?: string | null;
+  officialSignature?: string | null;
+  officialSignedAt?: string | null;
 }
 
 export const tenantsApi = {

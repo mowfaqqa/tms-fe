@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/page-header';
-import { TenantForm } from '@/components/tenants/tenant-form';
+import {
+  TenantForm,
+  tenantToFormValues,
+} from '@/components/tenants/tenant-form';
 import { useTenant, useUpdateTenant } from '@/lib/hooks/use-tenants';
 import { getApiErrorMessage } from '@/lib/api/errors';
 
@@ -43,16 +46,7 @@ export default function EditTenantPage() {
               submitLabel="Save changes"
               submitting={updateTenant.isPending}
               onCancel={() => router.push(`/tenants/${id}`)}
-              defaultValues={{
-                fullName: tenant.fullName,
-                phoneNumber: tenant.phoneNumber,
-                email: tenant.email,
-                propertyId: tenant.propertyId,
-                tenancyStartDate: tenant.tenancyStartDate.slice(0, 10),
-                tenancyEndDate: tenant.tenancyEndDate.slice(0, 10),
-                rentAmount: String(tenant.rentAmount),
-                status: tenant.status,
-              }}
+              defaultValues={tenantToFormValues(tenant)}
               onSubmit={(payload) =>
                 updateTenant.mutate(payload, {
                   onSuccess: () => {

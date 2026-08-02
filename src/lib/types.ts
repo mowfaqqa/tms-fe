@@ -2,6 +2,16 @@
 
 export type Role = 'ADMIN' | 'STAFF';
 export type TenantStatus = 'ACTIVE' | 'EXPIRED' | 'RENEWED';
+export type MaritalStatus =
+  | 'SINGLE'
+  | 'MARRIED'
+  | 'DIVORCED'
+  | 'WIDOWED'
+  | 'SEPARATED';
+export type IdentificationType =
+  | 'DRIVERS_LICENSE'
+  | 'INTERNATIONAL_PASSPORT'
+  | 'NATIONAL_ID';
 export type ReminderType =
   | 'SIX_MONTH'
   | 'THREE_MONTH'
@@ -81,6 +91,42 @@ export interface Tenant {
   createdAt: string;
   updatedAt: string;
   reminders?: Reminder[];
+  // Acquaintance form — personal details
+  age: number | null;
+  profession: string | null;
+  nationality: string | null;
+  homeAddress: string | null;
+  officeAddress: string | null;
+  officePhoneNumber: string | null;
+  maritalStatus: MaritalStatus | null;
+  stateOfOrigin: string | null;
+  lga: string | null;
+  // Acquaintance form — family / dependants
+  spouseName: string | null;
+  spouseOfficeAddress: string | null;
+  spousePhoneNumber: string | null;
+  numberOfChildren: number | null;
+  numberOfDependants: number | null;
+  // Acquaintance form — means of identification
+  identificationType: IdentificationType | null;
+  identificationNumber: string | null;
+  // Acquaintance form — history & referee
+  lastResidentialAddress: string | null;
+  reasonForLeaving: string | null;
+  applicantSignature: string | null;
+  applicantSignedAt: string | null;
+  agentName: string | null;
+  refereeName: string | null;
+  refereeProfession: string | null;
+  refereeAddress: string | null;
+  refereePhoneNumber: string | null;
+  refereeSignature: string | null;
+  refereeSignedAt: string | null;
+  // Acquaintance form — for official use only
+  serviceCharge: string | null; // decimal serialized as string
+  generalRemark: string | null;
+  officialSignature: string | null;
+  officialSignedAt: string | null;
 }
 
 export interface NotificationTenantRef {
