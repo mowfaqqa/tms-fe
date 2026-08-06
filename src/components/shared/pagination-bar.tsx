@@ -24,6 +24,7 @@ export function PaginationBar({
       </p>
       <div className="flex items-center gap-2">
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => onPageChange(page - 1)}
@@ -36,6 +37,7 @@ export function PaginationBar({
           Page {page} of {Math.max(totalPages, 1)}
         </span>
         <Button
+          type="button"
           variant="outline"
           size="sm"
           onClick={() => onPageChange(page + 1)}
