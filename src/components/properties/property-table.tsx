@@ -21,7 +21,7 @@ export function PropertyTable({ properties }: { properties: Property[] }) {
         <TableHeader>
           <TableRow>
             <TableHead>Property</TableHead>
-            <TableHead>Label</TableHead>
+            <TableHead>Landlord</TableHead>
             <TableHead className="text-right">Active tenants</TableHead>
             <TableHead>Occupancy</TableHead>
           </TableRow>

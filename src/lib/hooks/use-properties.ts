@@ -1,4 +1,5 @@
 import {
+  keepPreviousData,
   useMutation,
   useQuery,
   useQueryClient,
@@ -10,10 +11,14 @@ import {
 } from '@/lib/api/properties';
 import { queryKeys } from '@/lib/query-keys';
 
-export function useProperties(params: PropertyListParams) {
+export function useProperties(
+  params: PropertyListParams,
+  options?: { keepPreviousData?: boolean },
+) {
   return useQuery({
     queryKey: queryKeys.properties.list(params),
     queryFn: () => propertiesApi.list(params),
+    placeholderData: options?.keepPreviousData ? keepPreviousData : undefined,
   });
 }
 

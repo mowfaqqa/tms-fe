@@ -87,9 +87,9 @@ export function PropertyForm({
             name="label"
             render={({ field }) => (
               <FormItem className="sm:col-span-2">
-                <FormLabel>Label (optional)</FormLabel>
+                <FormLabel>Landlord (optional)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Marina Heights Block A" {...field} />
+                  <Input placeholder="Alhaji Musa Bello" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
