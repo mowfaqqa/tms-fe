@@ -104,6 +104,8 @@ const schema = z
     refereePhoneNumber: z.string().optional(),
     refereeSignature: z.string().optional(),
     refereeSignedAt: z.string().optional(),
+    // Extra details
+    remark: z.string().optional(),
     // For official use only
     serviceCharge: z
       .string()
@@ -158,6 +160,7 @@ const EMPTY: TenantFormValues = {
   refereePhoneNumber: '',
   refereeSignature: '',
   refereeSignedAt: '',
+  remark: '',
   serviceCharge: '',
   generalRemark: '',
   officialSignature: '',
@@ -209,6 +212,7 @@ export function tenantToFormValues(tenant: Tenant): TenantFormValues {
     refereePhoneNumber: str(tenant.refereePhoneNumber),
     refereeSignature: str(tenant.refereeSignature),
     refereeSignedAt: day(tenant.refereeSignedAt),
+    remark: str(tenant.remark),
     serviceCharge: str(tenant.serviceCharge),
     generalRemark: str(tenant.generalRemark),
     officialSignature: str(tenant.officialSignature),
@@ -297,6 +301,8 @@ export function TenantForm({
       refereePhoneNumber: text(values.refereePhoneNumber),
       refereeSignature: text(values.refereeSignature),
       refereeSignedAt: date(values.refereeSignedAt),
+      // Extra details
+      remark: text(values.remark),
       // For official use only
       serviceCharge:
         values.serviceCharge && values.serviceCharge.trim()
@@ -905,6 +911,32 @@ export function TenantForm({
               )}
             />
           </div>
+        </section>
+
+        <Separator />
+
+        <section className="space-y-4">
+          <SectionTitle
+            title="Extra details"
+            hint="Anything worth noting that the fields above don't cover."
+          />
+          <FormField
+            control={form.control}
+            name="remark"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Remark</FormLabel>
+                <FormControl>
+                  <Textarea
+                    rows={3}
+                    placeholder="e.g. Rent is overdue, Fresh lease, 1.5 million balance"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </section>
 
         <Separator />
