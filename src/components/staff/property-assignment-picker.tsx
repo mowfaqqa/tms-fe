@@ -1,30 +1,37 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
-import { Search } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Search, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PaginationBar } from '@/components/shared/pagination-bar';
 import { useProperties } from '@/lib/hooks/use-properties';
 import { useDebounce } from '@/lib/hooks/use-debounce';
+import type { Property } from '@/lib/types';
+
+const describe = (p: Property) => `${p.address}, Unit ${p.unitNumber}`;
 
 const PAGE_SIZE = 20;
 
 export function PropertyAssignmentPicker({
   selected,
   onChange,
+  initialLabels,
 }: {
   selected: string[];
   onChange: (propertyIds: string[]) => void;
+  /**
+   * Labels for already-selected properties, so the chip list can name them
+   * before the page they live on has been loaded — with 200+ properties the
+   * ticked ones are usually several pages deep.
+   */
+  initialLabels?: Record<string, string>;
 }) {
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const debouncedSearch = useDebounce(search, 350);
-
-  useEffect(() => {
-    setPage(1);
-  }, [debouncedSearch]);
 
   const queryParams = useMemo(
     () => ({
@@ -39,10 +46,22 @@ export function PropertyAssignmentPicker({
     keepPreviousData: true,
   });
 
-  const toggle = (id: string, checked: boolean) => {
-    onChange(
-      checked ? [...selected, id] : selected.filter((pid) => pid !== id),
-    );
+  // Remember the label of anything ticked, so a chip stays named after the
+  // user pages or searches away from the property that produced it.
+  const [labels, setLabels] = useState<Record<string, string>>(() => ({
+    ...initialLabels,
+  }));
+
+  const deselect = (id: string) =>
+    onChange(selected.filter((pid) => pid !== id));
+
+  const toggle = (property: Property, checked: boolean) => {
+    if (!checked) {
+      deselect(property.id);
+      return;
+    }
+    setLabels((prev) => ({ ...prev, [property.id]: describe(property) }));
+    onChange([...selected, property.id]);
   };
 
   return (
@@ -54,7 +73,11 @@ export function PropertyAssignmentPicker({
             placeholder="Search by address, unit, or landlord…"
             className="pl-9"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              // A new search invalidates the current page number.
+              setPage(1);
+            }}
             onKeyDown={(e) => {
               // The picker is rendered inside the staff form — don't submit it.
               if (e.key === 'Enter') e.preventDefault();
@@ -65,6 +88,26 @@ export function PropertyAssignmentPicker({
           {selected.length} selected
         </p>
       </div>
+
+      {selected.length > 0 ? (
+        <div className="flex flex-wrap gap-1.5 rounded-md border bg-muted/30 p-2">
+          {selected.map((id) => (
+            <Badge key={id} variant="secondary" className="gap-1 font-normal">
+              <span className="max-w-[22rem] truncate">
+                {labels[id] ?? 'Selected property'}
+              </span>
+              <button
+                type="button"
+                aria-label={`Remove ${labels[id] ?? 'property'}`}
+                className="rounded-full opacity-60 hover:opacity-100"
+                onClick={() => deselect(id)}
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+        </div>
+      ) : null}
 
       {isLoading ? (
         <div className="space-y-2">
@@ -88,7 +131,7 @@ export function PropertyAssignmentPicker({
               >
                 <Checkbox
                   checked={selected.includes(p.id)}
-                  onCheckedChange={(checked) => toggle(p.id, checked === true)}
+                  onCheckedChange={(checked) => toggle(p, checked === true)}
                 />
                 <span>
                   {p.address}, Unit {p.unitNumber}

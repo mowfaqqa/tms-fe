@@ -3,24 +3,26 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
-import { ArrowLeft, Pencil, Power, PowerOff } from 'lucide-react';
+import { ArrowLeft, Building2, Pencil, Power, PowerOff } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { PageHeader } from '@/components/shared/page-header';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
+import { EmptyState } from '@/components/shared/empty-state';
 import { RequireAdmin } from '@/components/shared/require-admin';
 import { StaffStatusBadge } from '@/components/staff/staff-status-badge';
-import { PropertyAssignmentPicker } from '@/components/staff/property-assignment-picker';
+import { OccupancyBadge } from '@/components/properties/occupancy-badge';
 import {
-  useAssignStaffProperties,
   useDeactivateStaff,
   useReactivateStaff,
   useStaffMember,
@@ -33,15 +35,9 @@ function StaffDetailLoaded({ staff }: { staff: StaffUser }) {
   const router = useRouter();
   const deactivate = useDeactivateStaff();
   const reactivate = useReactivateStaff();
-  const assignProperties = useAssignStaffProperties(staff.id);
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [propertyIds, setPropertyIds] = useState<string[]>(() =>
-    staff.staffAssignments.map((a) => a.propertyId),
-  );
 
-  const dirty =
-    JSON.stringify([...propertyIds].sort()) !==
-    JSON.stringify([...staff.staffAssignments.map((a) => a.propertyId)].sort());
+  const assignments = staff.staffAssignments;
 
   return (
     <>
@@ -93,40 +89,72 @@ function StaffDetailLoaded({ staff }: { staff: StaffUser }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Assigned properties</CardTitle>
+          <CardTitle>
+            Assigned properties
+            {assignments.length ? (
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
+                {assignments.length}
+              </span>
+            ) : null}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <PropertyAssignmentPicker
-            selected={propertyIds}
-            onChange={setPropertyIds}
-          />
-        </CardContent>
-        <CardFooter className="justify-end gap-2">
-          {dirty ? (
-            <Button
-              variant="outline"
-              onClick={() =>
-                setPropertyIds(
-                  staff.staffAssignments.map((a) => a.propertyId),
-                )
+          {assignments.length === 0 ? (
+            <EmptyState
+              icon={Building2}
+              title="No properties assigned"
+              description="This staff member can't see any tenants, notices, or reminders until a property is assigned to them."
+              action={
+                <Button asChild>
+                  <Link href={`/staff/${staff.id}/edit`}>
+                    <Pencil className="size-4" />
+                    Assign properties
+                  </Link>
+                </Button>
               }
-              disabled={assignProperties.isPending}
-            >
-              Reset
-            </Button>
-          ) : null}
-          <Button
-            onClick={() =>
-              assignProperties.mutate(propertyIds, {
-                onSuccess: () => toast.success('Property assignments saved.'),
-                onError: (e) => toast.error(getApiErrorMessage(e)),
-              })
-            }
-            disabled={!dirty || assignProperties.isPending}
-          >
-            Save assignments
-          </Button>
-        </CardFooter>
+            />
+          ) : (
+            <div className="overflow-x-auto rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Property</TableHead>
+                    <TableHead>Landlord</TableHead>
+                    <TableHead className="text-right">Tenants</TableHead>
+                    <TableHead>Occupancy</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {assignments.map((a) => (
+                    <TableRow
+                      key={a.id}
+                      className="cursor-pointer"
+                      onClick={() => router.push(`/properties/${a.propertyId}`)}
+                    >
+                      {/* Addresses run long — let them wrap so the occupancy
+                          columns stay visible without horizontal scrolling. */}
+                      <TableCell className="whitespace-normal">
+                        <div className="font-medium">{a.property.address}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Unit {a.property.unitNumber}
+                        </div>
+                      </TableCell>
+                      <TableCell className="whitespace-normal text-muted-foreground">
+                        {a.property.label ?? '—'}
+                      </TableCell>
+                      <TableCell className="text-right tabular-nums">
+                        {a.property.activeTenantCount}
+                      </TableCell>
+                      <TableCell>
+                        <OccupancyBadge status={a.property.occupancyStatus} />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
       </Card>
 
       <ConfirmDialog
