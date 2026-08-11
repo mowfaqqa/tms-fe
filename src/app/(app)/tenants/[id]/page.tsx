@@ -337,6 +337,17 @@ export default function TenantDetailPage() {
         </Card>
       ) : null}
 
+      {hasAny(tenant.remark) ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>Extra details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <InfoRow label="Remark" value={value(tenant.remark)} />
+          </CardContent>
+        </Card>
+      ) : null}
+
       {hasAny(
         tenant.serviceCharge,
         tenant.generalRemark,

@@ -122,6 +122,8 @@ export interface Tenant {
   refereePhoneNumber: string | null;
   refereeSignature: string | null;
   refereeSignedAt: string | null;
+  // Free-text remark for extra details
+  remark: string | null;
   // Acquaintance form — for official use only
   serviceCharge: string | null; // decimal serialized as string
   generalRemark: string | null;

@@ -55,6 +55,7 @@ export interface TenantPayload {
   refereePhoneNumber?: string | null;
   refereeSignature?: string | null;
   refereeSignedAt?: string | null;
+  remark?: string | null;
   serviceCharge?: number | null;
   generalRemark?: string | null;
   officialSignature?: string | null;
