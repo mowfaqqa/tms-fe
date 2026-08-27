@@ -7,6 +7,7 @@ import {
   CalendarClock,
   CalendarX,
   DoorOpen,
+  Wallet,
   Plus,
   RefreshCw,
   Users,
@@ -22,6 +23,7 @@ import {
 } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/page-header';
 import { MetricCard } from '@/components/dashboard/metric-card';
+import { formatMoney } from '@/lib/format';
 import { UpcomingActionsTable } from '@/components/dashboard/upcoming-actions-table';
 import { useDashboardMetrics } from '@/lib/hooks/use-dashboard';
 import { useRunSweep } from '@/lib/hooks/use-reminders';
@@ -132,6 +134,27 @@ export default function DashboardPage() {
           icon={DoorOpen}
           href="/properties?occupancy=vacant"
           tone="warning"
+          loading={isLoading}
+        />
+        <MetricCard
+          label="Part Payments"
+          value={metrics?.partPaymentTenancies ?? 0}
+          icon={Wallet}
+          href="/reports?tab=part-payments"
+          // Amber only while money is actually outstanding — an arrangement
+          // that has been paid off is not something to chase.
+          tone={
+            (metrics?.partPaymentsOutstandingCount ?? 0) > 0
+              ? 'warning'
+              : 'default'
+          }
+          subtext={
+            metrics
+              ? metrics.partPaymentsOutstandingCount > 0
+                ? `${formatMoney(metrics.partPaymentsOutstanding)} outstanding across ${metrics.partPaymentsOutstandingCount}`
+                : 'All settled'
+              : undefined
+          }
           loading={isLoading}
         />
       </div>

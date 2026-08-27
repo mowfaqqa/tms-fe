@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PartPaymentBadge } from '@/components/tenants/part-payment-badge';
 import { OccupancyBadge } from './occupancy-badge';
 import type { Property } from '@/lib/types';
 
@@ -46,7 +47,10 @@ export function PropertyTable({ properties }: { properties: Property[] }) {
                 {p.activeTenantCount}
               </TableCell>
               <TableCell>
-                <OccupancyBadge status={p.occupancyStatus} />
+                <div className="flex flex-wrap gap-1">
+                  <OccupancyBadge status={p.occupancyStatus} />
+                  <PartPaymentBadge isPartPayment={p.hasPartPayment} />
+                </div>
               </TableCell>
             </TableRow>
           ))}

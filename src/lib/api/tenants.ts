@@ -27,6 +27,10 @@ export interface TenantPayload {
   tenancyEndDate: string;
   rentAmount: number;
   status?: TenantStatus;
+  /** The tenant is paying the rent in instalments. */
+  isPartPayment?: boolean;
+  /** Create-only: recorded as the opening instalment in the payment ledger. */
+  depositAmount?: number;
   // Acquaintance-form fields — all optional. Send null to clear a stored value.
   age?: number | null;
   profession?: string | null;
