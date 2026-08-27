@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-query';
 import {
   tenantsApi,
+  type RenewTenancyPayload,
   type TenantListParams,
   type TenantPayload,
 } from '@/lib/api/tenants';
@@ -54,6 +55,24 @@ export function useCreateTenant() {
   return useMutation({
     mutationFn: (payload: TenantPayload) => tenantsApi.create(payload),
     onSuccess: invalidate,
+  });
+}
+
+/**
+ * Renewing touches both terms — the old one becomes RENEWED — so the
+ * superseded record's cached detail is dropped alongside the usual views.
+ */
+export function useRenewTenancy(id: string) {
+  const invalidate = useInvalidateTenantViews();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: RenewTenancyPayload) => tenantsApi.renew(id, payload),
+    onSuccess: () => {
+      invalidate();
+      qc.invalidateQueries({ queryKey: queryKeys.tenants.detail(id) });
+      qc.invalidateQueries({ queryKey: ['properties'] });
+      qc.invalidateQueries({ queryKey: ['reports'] });
+    },
   });
 }
 

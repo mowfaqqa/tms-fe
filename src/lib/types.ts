@@ -82,6 +82,8 @@ export interface Property {
   label: string | null;
   activeTenantCount: number;
   occupancyStatus: OccupancyStatus;
+  /** A current tenant is on a part-payment arrangement. */
+  hasPartPayment: boolean;
   createdById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -104,6 +106,55 @@ export interface Reminder {
   updatedAt: string;
 }
 
+/** Balance on a tenancy, derived server-side from the payment ledger. */
+export interface PaymentSummary {
+  amountPaid: string;
+  /** Never negative — an overpayment reads as nothing owed. */
+  outstanding: string;
+  isFullyPaid: boolean;
+  paymentCount: number;
+}
+
+export interface TenantPayment {
+  id: string;
+  amount: string;
+  paidAt: string;
+  method: string | null;
+  reference: string | null;
+  note: string | null;
+  createdAt: string;
+  recordedBy?: { id: string; fullName: string } | null;
+}
+
+export interface TenantPaymentLedger {
+  summary: PaymentSummary;
+  rentAmount: string;
+  isPartPayment: boolean;
+  payments: TenantPayment[];
+}
+
+/** A part-payment arrangement and what it still owes. */
+export interface PartPaymentRow extends PaymentSummary {
+  id: string;
+  fullName: string;
+  phoneNumber: string;
+  status: TenantStatus;
+  rentAmount: string;
+  tenancyStartDate: string;
+  tenancyEndDate: string;
+  property?: PropertyRef | null;
+  propertyLabel: string | null;
+}
+
+/** One end of the renewal chain — a superseded term, or the one that replaced it. */
+export interface TenancyTermRef {
+  id: string;
+  tenancyStartDate: string;
+  tenancyEndDate: string;
+  rentAmount: string;
+  status: TenantStatus;
+}
+
 export interface Tenant {
   id: string;
   fullName: string;
@@ -119,6 +170,15 @@ export interface Tenant {
   createdAt: string;
   updatedAt: string;
   reminders?: Reminder[];
+  /** The term this one renewed, when this record came from a renewal. */
+  renewedFromId?: string | null;
+  renewedFrom?: TenancyTermRef | null;
+  /** The term that replaced this one. Present only on a RENEWED record. */
+  renewedTo?: TenancyTermRef | null;
+  /** The tenant is paying rent in instalments. */
+  isPartPayment: boolean;
+  /** Balance, present on list and detail reads. */
+  payments?: PaymentSummary;
   // Acquaintance form — personal details
   age: number | null;
   profession: string | null;
@@ -163,6 +223,42 @@ export interface NotificationTenantRef {
   id: string;
   fullName: string;
   property?: PropertyRef;
+}
+
+/** Who raised or closed an issue. */
+export interface UserRef {
+  id: string;
+  fullName: string;
+  email: string;
+}
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  category: IssueCategory;
+  priority: IssuePriority;
+  status: IssueStatus;
+  propertyId: string | null;
+  tenantId: string | null;
+  raisedById: string | null;
+  resolvedById: string | null;
+  /** What the admin did about it. Required by the server on close. */
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  property?: (PropertyRef & { label: string | null }) | null;
+  tenant?: { id: string; fullName: string; phoneNumber: string } | null;
+  raisedBy?: UserRef | null;
+  resolvedBy?: UserRef | null;
+}
+
+export interface IssueSummary {
+  counts: Record<IssueStatus, number>;
+  /** OPEN + IN_REVIEW — what still needs the admin's attention. */
+  awaitingReview: number;
+  total: number;
 }
 
 export interface NotificationIssueRef {
@@ -216,6 +312,12 @@ export interface DashboardMetrics {
   totalProperties: number;
   occupiedProperties: number;
   vacantProperties: number;
+  /** Every part-payment arrangement, settled or not. */
+  partPaymentTenancies: number;
+  /** How many of those still owe something. */
+  partPaymentsOutstandingCount: number;
+  /** Total still owed across them, as a decimal string. */
+  partPaymentsOutstanding: string;
 }
 
 export interface StaffAssignment {

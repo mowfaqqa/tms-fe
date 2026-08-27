@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { PartPaymentBadge } from './part-payment-badge';
 import { TenantStatusBadge } from './tenant-status-badge';
 import { formatDate, formatMoney, formatRelative } from '@/lib/format';
 import type { Tenant } from '@/lib/types';
@@ -55,9 +56,20 @@ export function TenantTable({ tenants }: { tenants: Tenant[] }) {
               </TableCell>
               <TableCell className="text-right tabular-nums">
                 {formatMoney(t.rentAmount)}
+                {t.isPartPayment && t.payments && !t.payments.isFullyPaid ? (
+                  <div className="text-xs text-amber-600 dark:text-amber-500">
+                    {formatMoney(t.payments.outstanding)} owing
+                  </div>
+                ) : null}
               </TableCell>
               <TableCell>
-                <TenantStatusBadge status={t.status} />
+                <div className="flex flex-wrap gap-1">
+                  <TenantStatusBadge status={t.status} />
+                  <PartPaymentBadge
+                    isPartPayment={t.isPartPayment}
+                    isFullyPaid={t.payments?.isFullyPaid}
+                  />
+                </div>
               </TableCell>
             </TableRow>
           ))}

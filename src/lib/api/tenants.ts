@@ -27,6 +27,10 @@ export interface TenantPayload {
   tenancyEndDate: string;
   rentAmount: number;
   status?: TenantStatus;
+  /** The tenant is paying the rent in instalments. */
+  isPartPayment?: boolean;
+  /** Create-only: recorded as the opening instalment in the payment ledger. */
+  depositAmount?: number;
   // Acquaintance-form fields — all optional. Send null to clear a stored value.
   age?: number | null;
   profession?: string | null;
@@ -62,6 +66,15 @@ export interface TenantPayload {
   officialSignedAt?: string | null;
 }
 
+export interface RenewTenancyPayload {
+  tenancyStartDate: string;
+  tenancyEndDate: string;
+  rentAmount: number;
+  /** Renew into a different unit. Staff may only name a property they hold. */
+  propertyId?: string;
+  serviceCharge?: number;
+}
+
 export const tenantsApi = {
   async list(params: TenantListParams): Promise<Paginated<Tenant>> {
     const { data } = await api.get<Paginated<Tenant>>('/tenants', { params });
@@ -93,6 +106,12 @@ export const tenantsApi = {
     payload: Partial<TenantPayload>,
   ): Promise<Tenant> {
     const { data } = await api.patch<Tenant>(`/tenants/${id}`, payload);
+    return data;
+  },
+
+  /** Supersedes the current term and returns the new one. */
+  async renew(id: string, payload: RenewTenancyPayload): Promise<Tenant> {
+    const { data } = await api.post<Tenant>(`/tenants/${id}/renew`, payload);
     return data;
   },
 

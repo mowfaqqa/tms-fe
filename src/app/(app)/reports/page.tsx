@@ -9,6 +9,7 @@ import { ReportView, type ReportColumn } from '@/components/reports/report-view'
 import { OccupancyBadge } from '@/components/properties/occupancy-badge';
 import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
 import { ActivityChanges } from '@/components/reports/activity-changes';
+import { PartPaymentsReport } from '@/components/reports/part-payments-report';
 import { activityActionLabel, activitySubject } from '@/lib/labels';
 import { useAuth } from '@/lib/auth/auth-context';
 import { exportTenantsToCsv } from '@/lib/csv';
@@ -131,13 +132,14 @@ export default function ReportsPage() {
       />
 
       <Tabs defaultValue="upcoming">
-        <TabsList className="flex-wrap h-auto">
+        <TabsList className="flex-wrap h-auto!">
           <TabsTrigger value="upcoming">Upcoming Expirations</TabsTrigger>
           <TabsTrigger value="active">Active Tenants</TabsTrigger>
           <TabsTrigger value="expired">Expired Tenants</TabsTrigger>
           <TabsTrigger value="recently-added">Recently Added</TabsTrigger>
           <TabsTrigger value="vacant-properties">Vacant Properties</TabsTrigger>
           <TabsTrigger value="occupied-properties">Occupied Properties</TabsTrigger>
+          <TabsTrigger value="part-payments">Part Payments</TabsTrigger>
           {isAdmin ? (
             <>
               <TabsTrigger value="assigned-properties">
@@ -263,6 +265,13 @@ export default function ReportsPage() {
             </TabsContent>
           </>
         ) : null}
+        <TabsContent value="part-payments">
+          <Card>
+            <CardContent>
+              <PartPaymentsReport />
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </>
   );

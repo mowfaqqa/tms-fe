@@ -1,10 +1,35 @@
 import { api } from './client';
-import type { Paginated, StaffUser } from '@/lib/types';
+import type {
+  ActivityAction,
+  ActivityLogEntry,
+  Paginated,
+  ReportResponse,
+  StaffActivitySummary,
+  StaffUser,
+} from '@/lib/types';
 
 export interface StaffListParams {
   page?: number;
   limit?: number;
   search?: string;
+}
+
+export interface StaffActivityParams {
+  page?: number;
+  limit?: number;
+  from?: string;
+  to?: string;
+  action?: ActivityAction;
+  entityType?: string;
+}
+
+/**
+ * /staff/:id/activity returns the same envelope as the staff-activity report
+ * with the per-action counts attached, so one request drives both the
+ * breakdown and the feed.
+ */
+export interface StaffActivityResponse extends ReportResponse<ActivityLogEntry> {
+  summary: StaffActivitySummary;
 }
 
 export interface CreateStaffPayload {
@@ -29,6 +54,17 @@ export const staffApi = {
 
   async get(id: string): Promise<StaffUser> {
     const { data } = await api.get<StaffUser>(`/staff/${id}`);
+    return data;
+  },
+
+  async activity(
+    id: string,
+    params: StaffActivityParams = {},
+  ): Promise<StaffActivityResponse> {
+    const { data } = await api.get<StaffActivityResponse>(
+      `/staff/${id}/activity`,
+      { params },
+    );
     return data;
   },
 
