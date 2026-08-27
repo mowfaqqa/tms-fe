@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { Loader2 } from 'lucide-react';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
@@ -14,6 +14,8 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import { formatMoney } from '@/lib/format';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -92,6 +94,13 @@ const schema = z
         message: 'Enter a valid amount',
       }),
     status: z.enum(['ACTIVE', 'EXPIRED', 'RENEWED']).optional(),
+    isPartPayment: z.boolean().optional(),
+    depositAmount: z
+      .string()
+      .optional()
+      .refine((v) => !v || (!Number.isNaN(Number(v)) && Number(v) > 0), {
+        message: 'Enter a valid deposit amount',
+      }),
     // Previous residence & referee
     lastResidentialAddress: z.string().optional(),
     reasonForLeaving: z.string().optional(),
@@ -148,6 +157,8 @@ const EMPTY: TenantFormValues = {
   tenancyStartDate: '',
   tenancyEndDate: '',
   rentAmount: '',
+  isPartPayment: false,
+  depositAmount: '',
   status: 'ACTIVE',
   lastResidentialAddress: '',
   reasonForLeaving: '',
@@ -200,6 +211,10 @@ export function tenantToFormValues(tenant: Tenant): TenantFormValues {
     tenancyStartDate: day(tenant.tenancyStartDate),
     tenancyEndDate: day(tenant.tenancyEndDate),
     rentAmount: String(tenant.rentAmount),
+    isPartPayment: tenant.isPartPayment ?? false,
+    // Deposit is write-only: on an existing tenancy the instalments are
+    // managed from the payment ledger, not by re-editing a starting figure.
+    depositAmount: '',
     status: tenant.status,
     lastResidentialAddress: str(tenant.lastResidentialAddress),
     reasonForLeaving: str(tenant.reasonForLeaving),
@@ -260,6 +275,31 @@ export function TenantForm({
     defaultValues: { ...EMPTY, ...defaultValues },
   });
 
+  // `showStatus` is only ever set on the edit page, so it doubles as the
+  // signal that we are editing an existing tenancy rather than creating one.
+  const isEditing = showStatus;
+  const partPayment = useWatch({
+    control: form.control,
+    name: 'isPartPayment',
+  });
+  const rentAmount = useWatch({ control: form.control, name: 'rentAmount' });
+  const depositAmount = useWatch({
+    control: form.control,
+    name: 'depositAmount',
+  });
+
+  const depositHint = (() => {
+    const rent = Number(rentAmount);
+    const deposit = Number(depositAmount);
+    if (!deposit || !rent || Number.isNaN(rent) || Number.isNaN(deposit)) {
+      return 'Recorded as the first instalment against this tenancy.';
+    }
+    if (deposit >= rent) {
+      return 'That covers the rent in full — the balance will show as settled.';
+    }
+    return `Leaves ${formatMoney(rent - deposit)} outstanding.`;
+  })();
+
   const handle = (values: TenantFormValues) => {
     const payload: TenantPayload = {
       fullName: values.fullName,
@@ -269,6 +309,10 @@ export function TenantForm({
       tenancyStartDate: values.tenancyStartDate,
       tenancyEndDate: values.tenancyEndDate,
       rentAmount: Number(values.rentAmount),
+      isPartPayment: values.isPartPayment ?? false,
+      ...(values.isPartPayment && values.depositAmount
+        ? { depositAmount: Number(values.depositAmount) }
+        : {}),
       ...(showStatus && values.status ? { status: values.status } : {}),
       // Personal details
       age: count(values.age),
@@ -721,6 +765,61 @@ export function TenantForm({
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="isPartPayment"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2">
+                  <div className="flex items-start gap-2.5 rounded-md border p-3">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                        className="mt-0.5"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="font-normal">
+                        Paying the rent in instalments
+                      </FormLabel>
+                      <p className="text-xs text-muted-foreground">
+                        {isEditing
+                          ? 'Instalments are recorded from the tenant page.'
+                          : 'You can record the deposit below; further payments are added from the tenant page.'}
+                      </p>
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {/* Deposit is only offered on creation. On an existing tenancy the
+                ledger owns the figures, and a second "starting deposit" box
+                would be a way to record the same money twice. */}
+            {partPayment && !isEditing ? (
+              <FormField
+                control={form.control}
+                name="depositAmount"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2">
+                    <FormLabel>Deposit received</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="500000"
+                        {...field}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      {depositHint}
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ) : null}
             {showStatus ? (
               <FormField
                 control={form.control}

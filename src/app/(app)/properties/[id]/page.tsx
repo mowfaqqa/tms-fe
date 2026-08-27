@@ -17,6 +17,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { OccupancyBadge } from '@/components/properties/occupancy-badge';
+import { PartPaymentBadge } from '@/components/tenants/part-payment-badge';
 import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
 import {
   useDeleteProperty,
@@ -88,6 +89,7 @@ export default function PropertyDetailPage() {
 
       <div className="flex items-center gap-2">
         <OccupancyBadge status={property.occupancyStatus} />
+        <PartPaymentBadge isPartPayment={property.hasPartPayment} />
         <span className="text-sm text-muted-foreground">
           {property.activeTenantCount} active tenant
           {property.activeTenantCount === 1 ? '' : 's'} · Added{' '}
@@ -153,6 +155,10 @@ export default function PropertyDetailPage() {
                       </p>
                     </div>
                     <TenantStatusBadge status={tenant.status} />
+                    <PartPaymentBadge
+                      isPartPayment={tenant.isPartPayment}
+                      isFullyPaid={tenant.payments?.isFullyPaid}
+                    />
                   </Link>
                 </li>
               ))}

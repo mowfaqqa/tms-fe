@@ -1,5 +1,6 @@
 import type { IssueListParams } from './api/issues';
 import type { NoticeListParams } from './api/notices';
+import type { PartPaymentListParams } from './api/payments';
 import type { NotificationListParams } from './api/notifications';
 import type { PropertyListParams } from './api/properties';
 import type { ReportKey, ReportParams } from './api/reports';
@@ -34,6 +35,13 @@ export const queryKeys = {
     list: (params: IssueListParams) => ['issues', 'list', params] as const,
     detail: (id: string) => ['issues', 'detail', id] as const,
     summary: ['issues', 'summary'] as const,
+  },
+  payments: {
+    all: ['payments'] as const,
+    forTenant: (tenantId: string) =>
+      ['payments', 'tenant', tenantId] as const,
+    partPayments: (params: PartPaymentListParams) =>
+      ['payments', 'part-payments', params] as const,
   },
   reports: {
     detail: (key: ReportKey, params: ReportParams = {}) =>

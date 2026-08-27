@@ -11,6 +11,7 @@ export function MetricCard({
   href,
   tone = 'default',
   loading = false,
+  subtext,
 }: {
   label: string;
   value: number;
@@ -18,6 +19,8 @@ export function MetricCard({
   href?: string;
   tone?: 'default' | 'warning' | 'danger';
   loading?: boolean;
+  /** Small line under the figure, e.g. the amount a count is standing in for. */
+  subtext?: string;
 }) {
   const toneClasses =
     tone === 'danger'
@@ -37,7 +40,12 @@ export function MetricCard({
           {loading ? (
             <Skeleton className="h-7 w-12" />
           ) : (
-            <p className="text-2xl font-semibold tracking-tight">{value}</p>
+            <>
+              <p className="text-2xl font-semibold tracking-tight">{value}</p>
+              {subtext ? (
+                <p className="text-xs text-muted-foreground">{subtext}</p>
+              ) : null}
+            </>
           )}
         </div>
       </CardContent>

@@ -28,6 +28,7 @@ import { PageHeader } from '@/components/shared/page-header';
 import { EmptyState } from '@/components/shared/empty-state';
 import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
+import { PaymentPanel } from '@/components/tenants/payment-panel';
 import { RemindersTimeline } from '@/components/tenants/reminders-timeline';
 import { GenerateNoticeDialog } from '@/components/notices/generate-notice-dialog';
 import { RenewTenancyDialog } from '@/components/tenants/renew-tenancy-dialog';
@@ -409,6 +410,8 @@ export default function TenantDetailPage() {
           </CardContent>
         </Card>
       ) : null}
+
+      <PaymentPanel tenantId={tenant.id} />
 
       <Card>
         <CardHeader>
