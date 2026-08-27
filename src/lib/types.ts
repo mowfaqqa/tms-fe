@@ -165,6 +165,42 @@ export interface NotificationTenantRef {
   property?: PropertyRef;
 }
 
+/** Who raised or closed an issue. */
+export interface UserRef {
+  id: string;
+  fullName: string;
+  email: string;
+}
+
+export interface Issue {
+  id: string;
+  title: string;
+  description: string;
+  category: IssueCategory;
+  priority: IssuePriority;
+  status: IssueStatus;
+  propertyId: string | null;
+  tenantId: string | null;
+  raisedById: string | null;
+  resolvedById: string | null;
+  /** What the admin did about it. Required by the server on close. */
+  resolutionNote: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  property?: (PropertyRef & { label: string | null }) | null;
+  tenant?: { id: string; fullName: string; phoneNumber: string } | null;
+  raisedBy?: UserRef | null;
+  resolvedBy?: UserRef | null;
+}
+
+export interface IssueSummary {
+  counts: Record<IssueStatus, number>;
+  /** OPEN + IN_REVIEW — what still needs the admin's attention. */
+  awaitingReview: number;
+  total: number;
+}
+
 export interface NotificationIssueRef {
   id: string;
   title: string;

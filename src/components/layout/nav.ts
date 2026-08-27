@@ -3,6 +3,7 @@ import {
   Building2,
   FileText,
   LayoutDashboard,
+  MessageSquareWarning,
   ScrollText,
   ShieldCheck,
   Users,
@@ -22,6 +23,8 @@ export const NAV_ITEMS: NavItem[] = [
   { label: 'Properties', href: '/properties', icon: Building2 },
   { label: 'Tenants', href: '/tenants', icon: Users },
   { label: 'Notices', href: '/notices', icon: FileText },
+  // Visible to staff too — they are the ones raising escalations.
+  { label: 'Issues', href: '/issues', icon: MessageSquareWarning },
   { label: 'Notifications', href: '/notifications', icon: Bell },
   { label: 'Reports', href: '/reports', icon: ScrollText },
   {

@@ -1,3 +1,4 @@
+import type { IssueListParams } from './api/issues';
 import type { NoticeListParams } from './api/notices';
 import type { NotificationListParams } from './api/notifications';
 import type { PropertyListParams } from './api/properties';
@@ -27,6 +28,12 @@ export const queryKeys = {
     all: ['notices'] as const,
     list: (params: NoticeListParams) => ['notices', 'list', params] as const,
     detail: (id: string) => ['notices', 'detail', id] as const,
+  },
+  issues: {
+    all: ['issues'] as const,
+    list: (params: IssueListParams) => ['issues', 'list', params] as const,
+    detail: (id: string) => ['issues', 'detail', id] as const,
+    summary: ['issues', 'summary'] as const,
   },
   reports: {
     detail: (key: ReportKey, params: ReportParams = {}) =>
