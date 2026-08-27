@@ -6,6 +6,7 @@ import {
 import {
   staffApi,
   type CreateStaffPayload,
+  type StaffActivityParams,
   type StaffListParams,
   type UpdateStaffPayload,
 } from '@/lib/api/staff';
@@ -23,6 +24,17 @@ export function useStaffMember(id: string) {
     queryKey: queryKeys.staff.detail(id),
     queryFn: () => staffApi.get(id),
     enabled: !!id,
+  });
+}
+
+/** Feed plus per-action counts for one staff member, in a single request. */
+export function useStaffActivity(id: string, params: StaffActivityParams = {}) {
+  return useQuery({
+    queryKey: queryKeys.staff.activity(id, params),
+    queryFn: () => staffApi.activity(id, params),
+    enabled: !!id,
+    // Hold the current page on screen while the next one loads.
+    placeholderData: (previous) => previous,
   });
 }
 
