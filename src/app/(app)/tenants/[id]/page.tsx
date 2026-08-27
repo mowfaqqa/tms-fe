@@ -11,6 +11,7 @@ import {
   Pencil,
   Phone,
   Plus,
+  RefreshCw,
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -29,6 +30,8 @@ import { ConfirmDialog } from '@/components/shared/confirm-dialog';
 import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
 import { RemindersTimeline } from '@/components/tenants/reminders-timeline';
 import { GenerateNoticeDialog } from '@/components/notices/generate-notice-dialog';
+import { RenewTenancyDialog } from '@/components/tenants/renew-tenancy-dialog';
+import { TenancyTermBanner } from '@/components/tenants/tenancy-term-banner';
 import { NoticeStatusBadge } from '@/components/notices/notice-status-badge';
 import {
   IDENTIFICATION_TYPE_LABELS,
@@ -42,6 +45,7 @@ import {
 } from '@/lib/hooks/use-tenants';
 import { useAuth } from '@/lib/auth/auth-context';
 import { getApiErrorMessage } from '@/lib/api/errors';
+import { differenceInCalendarDays, parseISO } from 'date-fns';
 import { formatDate, formatMoney } from '@/lib/format';
 
 function InfoRow({
@@ -95,6 +99,14 @@ export default function TenantDetailPage() {
     );
   }
 
+  // Renewal becomes the obvious action once the term is nearly over, so it
+  // takes the primary button from Edit rather than sitting beside it.
+  const daysLeft = differenceInCalendarDays(
+    parseISO(tenant.tenancyEndDate),
+    new Date(),
+  );
+  const dueForRenewal = tenant.status !== 'RENEWED' && daysLeft <= 30;
+
   return (
     <>
       <PageHeader
@@ -116,7 +128,18 @@ export default function TenantDetailPage() {
                 </Button>
               }
             />
-            <Button asChild>
+            {tenant.status === 'RENEWED' ? null : (
+              <RenewTenancyDialog
+                tenant={tenant}
+                trigger={
+                  <Button variant={dueForRenewal ? 'default' : 'outline'}>
+                    <RefreshCw className="size-4" />
+                    Renew
+                  </Button>
+                }
+              />
+            )}
+            <Button asChild variant={dueForRenewal ? 'outline' : 'default'}>
               <Link href={`/tenants/${tenant.id}/edit`}>
                 <Pencil className="size-4" />
                 Edit
@@ -142,6 +165,8 @@ export default function TenantDetailPage() {
           Added {formatDate(tenant.createdAt)}
         </span>
       </div>
+
+      <TenancyTermBanner tenant={tenant} />
 
       <Card>
         <CardHeader>

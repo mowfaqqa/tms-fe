@@ -104,6 +104,15 @@ export interface Reminder {
   updatedAt: string;
 }
 
+/** One end of the renewal chain — a superseded term, or the one that replaced it. */
+export interface TenancyTermRef {
+  id: string;
+  tenancyStartDate: string;
+  tenancyEndDate: string;
+  rentAmount: string;
+  status: TenantStatus;
+}
+
 export interface Tenant {
   id: string;
   fullName: string;
@@ -119,6 +128,11 @@ export interface Tenant {
   createdAt: string;
   updatedAt: string;
   reminders?: Reminder[];
+  /** The term this one renewed, when this record came from a renewal. */
+  renewedFromId?: string | null;
+  renewedFrom?: TenancyTermRef | null;
+  /** The term that replaced this one. Present only on a RENEWED record. */
+  renewedTo?: TenancyTermRef | null;
   // Acquaintance form — personal details
   age: number | null;
   profession: string | null;

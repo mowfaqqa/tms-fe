@@ -56,7 +56,10 @@ export function RemindersTimeline({ tenantId }: { tenantId: string }) {
               label={REMINDER_STATUS_LABELS[reminder.status]}
               tone={REMINDER_STATUS_TONE[reminder.status]}
             />
-            {reminder.status !== 'ACKNOWLEDGED' ? (
+            {/* A cancelled reminder belongs to a term that has ended or been
+                renewed — there is nothing left to acknowledge. */}
+            {reminder.status === 'PENDING' ||
+            reminder.status === 'TRIGGERED' ? (
               <Button
                 size="sm"
                 variant="ghost"
