@@ -3,7 +3,7 @@ import type { NoticeListParams } from './api/notices';
 import type { NotificationListParams } from './api/notifications';
 import type { PropertyListParams } from './api/properties';
 import type { ReportKey, ReportParams } from './api/reports';
-import type { StaffListParams } from './api/staff';
+import type { StaffActivityParams, StaffListParams } from './api/staff';
 import type { TenantListParams } from './api/tenants';
 
 export const queryKeys = {
@@ -52,5 +52,7 @@ export const queryKeys = {
     all: ['staff'] as const,
     list: (params: StaffListParams) => ['staff', 'list', params] as const,
     detail: (id: string) => ['staff', 'detail', id] as const,
+    activity: (id: string, params: StaffActivityParams = {}) =>
+      ['staff', id, 'activity', params] as const,
   },
 };
