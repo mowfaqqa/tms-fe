@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -7,7 +8,8 @@ import { PageHeader } from '@/components/shared/page-header';
 import { ReportView, type ReportColumn } from '@/components/reports/report-view';
 import { OccupancyBadge } from '@/components/properties/occupancy-badge';
 import { TenantStatusBadge } from '@/components/tenants/tenant-status-badge';
-import { ACTIVITY_ACTION_LABELS } from '@/lib/labels';
+import { ActivityChanges } from '@/components/reports/activity-changes';
+import { activityActionLabel, activitySubject } from '@/lib/labels';
 import { useAuth } from '@/lib/auth/auth-context';
 import { exportTenantsToCsv } from '@/lib/csv';
 import { formatDate, formatDateTime, formatMoney } from '@/lib/format';
@@ -69,10 +71,35 @@ const propertyColumns: ReportColumn<Property>[] = [
 ];
 
 const staffActivityColumns: ReportColumn<ActivityLogEntry>[] = [
-  { header: 'When', render: (a) => formatDateTime(a.createdAt) },
-  { header: 'Staff', render: (a) => a.actor?.fullName ?? '—' },
-  { header: 'Action', render: (a) => ACTIVITY_ACTION_LABELS[a.action] },
-  { header: 'Entity', render: (a) => a.entityType },
+  {
+    header: 'When',
+    render: (a) => (
+      <span className="whitespace-nowrap">{formatDateTime(a.createdAt)}</span>
+    ),
+  },
+  {
+    header: 'Staff',
+    // A null actor is the nightly sweep, not a missing record.
+    render: (a) => a.actor?.fullName ?? <span title="Automated">System</span>,
+  },
+  {
+    header: 'Action',
+    render: (a) => {
+      const subject = activitySubject(a);
+      return (
+        <>
+          <div className="font-medium">{activityActionLabel(a.action)}</div>
+          {subject ? (
+            <div className="text-xs text-muted-foreground">{subject}</div>
+          ) : null}
+        </>
+      );
+    },
+  },
+  {
+    header: 'What changed',
+    render: (a) => <ActivityChanges changes={a.changes} />,
+  },
 ];
 
 const assignedPropertiesColumns: ReportColumn<AssignedPropertiesRow>[] = [
@@ -92,6 +119,9 @@ const assignedPropertiesColumns: ReportColumn<AssignedPropertiesRow>[] = [
 export default function ReportsPage() {
   const router = useRouter();
   const { isAdmin } = useAuth();
+  // The audit log is the one report the server pages, since it grows without
+  // bound; every other tab returns its full result set.
+  const [activityPage, setActivityPage] = useState(1);
 
   return (
     <>
@@ -225,6 +255,8 @@ export default function ReportsPage() {
                     columns={staffActivityColumns}
                     rowKey={(a) => a.id}
                     enabled={isAdmin}
+                    page={activityPage}
+                    onPageChange={setActivityPage}
                   />
                 </CardContent>
               </Card>
