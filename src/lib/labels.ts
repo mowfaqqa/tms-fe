@@ -1,5 +1,8 @@
 import type {
   ActivityAction,
+  IssueCategory,
+  IssuePriority,
+  IssueStatus,
   IdentificationType,
   MaritalStatus,
   NoticeStatus,
@@ -21,6 +24,7 @@ export const REMINDER_STATUS_LABELS: Record<ReminderStatus, string> = {
   PENDING: 'Pending',
   TRIGGERED: 'Triggered',
   ACKNOWLEDGED: 'Acknowledged',
+  CANCELLED: 'Cancelled',
 };
 
 export const TENANT_STATUS_LABELS: Record<TenantStatus, string> = {
@@ -66,6 +70,7 @@ export const REMINDER_STATUS_TONE: Record<ReminderStatus, BadgeTone> = {
   PENDING: 'outline',
   TRIGGERED: 'default',
   ACKNOWLEDGED: 'secondary',
+  CANCELLED: 'secondary',
 };
 
 export const NOTICE_STATUS_TONE: Record<NoticeStatus, BadgeTone> = {
@@ -86,12 +91,108 @@ export const OCCUPANCY_STATUS_TONE: Record<OccupancyStatus, BadgeTone> = {
 export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   PROPERTY_CREATED: 'Property created',
   PROPERTY_UPDATED: 'Property updated',
+  PROPERTY_DELETED: 'Property deleted',
   TENANT_CREATED: 'Tenant created',
   TENANT_UPDATED: 'Tenant updated',
+  TENANT_DELETED: 'Tenant deleted',
   STAFF_CREATED: 'Staff created',
   STAFF_UPDATED: 'Staff updated',
   STAFF_DEACTIVATED: 'Staff deactivated',
   STAFF_REACTIVATED: 'Staff reactivated',
   PROPERTY_ASSIGNED: 'Property assigned',
   PROPERTY_UNASSIGNED: 'Property unassigned',
+  NOTICE_CREATED: 'Notice drafted',
+  NOTICE_UPDATED: 'Notice updated',
+  NOTICE_ISSUED: 'Notice issued',
+  NOTICE_DELETED: 'Notice deleted',
+  REMINDER_ACKNOWLEDGED: 'Reminder acknowledged',
+  ISSUE_RAISED: 'Issue reported',
+  ISSUE_UPDATED: 'Issue updated',
+  ISSUE_STATUS_CHANGED: 'Issue status changed',
+  TENANCY_EXPIRED: 'Tenancy expired',
+};
+
+/**
+ * The server can add actions ahead of a frontend deploy, so never index the
+ * map directly — an unknown action would render as `undefined`. Falls back to
+ * a readable version of the enum name.
+ */
+export function activityActionLabel(action: ActivityAction | string): string {
+  return (
+    ACTIVITY_ACTION_LABELS[action as ActivityAction] ??
+    action
+      .toLowerCase()
+      .replace(/_/g, ' ')
+      .replace(/^./, (c) => c.toUpperCase())
+  );
+}
+
+/**
+ * What an activity entry was *about*, for display under the action label.
+ * Deliberately not the server's `summary` sentence — that repeats the action
+ * verb already shown above it, and its diff tail repeats the changes column.
+ *
+ * Assignment entries are the exception: their `entityLabel` is the staff
+ * member, so the property has to come from the metadata or the row would
+ * never say which property moved.
+ */
+export function activitySubject(entry: {
+  action: ActivityAction;
+  entityLabel?: string | null;
+  metadata?: Record<string, unknown> | null;
+}): string | null {
+  const propertyLabel =
+    typeof entry.metadata?.propertyLabel === 'string'
+      ? entry.metadata.propertyLabel
+      : null;
+
+  if (
+    entry.action === 'PROPERTY_ASSIGNED' ||
+    entry.action === 'PROPERTY_UNASSIGNED'
+  ) {
+    const preposition = entry.action === 'PROPERTY_ASSIGNED' ? 'to' : 'from';
+    if (propertyLabel && entry.entityLabel) {
+      return `${propertyLabel} ${preposition} ${entry.entityLabel}`;
+    }
+    return propertyLabel ?? entry.entityLabel ?? null;
+  }
+
+  return entry.entityLabel ?? null;
+}
+
+export const ISSUE_STATUS_LABELS: Record<IssueStatus, string> = {
+  OPEN: 'Open',
+  IN_REVIEW: 'In review',
+  RESOLVED: 'Resolved',
+  REJECTED: 'Declined',
+};
+
+export const ISSUE_STATUS_TONE: Record<IssueStatus, BadgeTone> = {
+  OPEN: 'destructive',
+  IN_REVIEW: 'default',
+  RESOLVED: 'success',
+  REJECTED: 'secondary',
+};
+
+export const ISSUE_PRIORITY_LABELS: Record<IssuePriority, string> = {
+  LOW: 'Low',
+  MEDIUM: 'Medium',
+  HIGH: 'High',
+  URGENT: 'Urgent',
+};
+
+export const ISSUE_PRIORITY_TONE: Record<IssuePriority, BadgeTone> = {
+  LOW: 'secondary',
+  MEDIUM: 'outline',
+  HIGH: 'default',
+  URGENT: 'destructive',
+};
+
+export const ISSUE_CATEGORY_LABELS: Record<IssueCategory, string> = {
+  MAINTENANCE: 'Maintenance',
+  TENANT_COMPLAINT: 'Tenant complaint',
+  RENT_PAYMENT: 'Rent / payment',
+  SECURITY: 'Security',
+  LEGAL: 'Legal',
+  OTHER: 'Other',
 };

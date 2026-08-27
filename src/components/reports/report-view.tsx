@@ -12,8 +12,13 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/empty-state';
+import { PaginationBar } from '@/components/shared/pagination-bar';
 import { useReport } from '@/lib/hooks/use-reports';
-import type { ReportKey, ReportRowTypes } from '@/lib/api/reports';
+import type {
+  ReportKey,
+  ReportParams,
+  ReportRowTypes,
+} from '@/lib/api/reports';
 
 export interface ReportColumn<T> {
   header: string;
@@ -29,6 +34,10 @@ export function ReportView<K extends ReportKey>({
   onRowClick,
   exportCsv,
   enabled = true,
+  params,
+  page,
+  onPageChange,
+  toolbar,
 }: {
   reportKey: K;
   filename: string;
@@ -37,8 +46,15 @@ export function ReportView<K extends ReportKey>({
   onRowClick?: (row: ReportRowTypes[K]) => void;
   exportCsv?: (rows: ReportRowTypes[K][], filename: string) => void;
   enabled?: boolean;
+  /** Server-side filters. Paginated reports also take `page`/`limit`. */
+  params?: ReportParams;
+  page?: number;
+  onPageChange?: (page: number) => void;
+  /** Filter controls rendered above the table. */
+  toolbar?: React.ReactNode;
 }) {
-  const { data, isLoading } = useReport(reportKey, enabled);
+  const query = { ...params, ...(page ? { page } : {}) };
+  const { data, isLoading } = useReport(reportKey, enabled, query);
 
   if (isLoading) {
     return (
@@ -52,19 +68,27 @@ export function ReportView<K extends ReportKey>({
 
   if (!data || data.rows.length === 0) {
     return (
-      <EmptyState
-        icon={ScrollText}
-        title="No records"
-        description="There is nothing to report for this view yet."
-      />
+      <div className="space-y-4">
+        {toolbar}
+        <EmptyState
+          icon={ScrollText}
+          title="No records"
+          description="There is nothing to report for this view yet."
+        />
+      </div>
     );
   }
 
   return (
     <div className="space-y-4">
+      {toolbar}
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {data.count} record{data.count === 1 ? '' : 's'}
+          {/* On a paged report `count` is just this page — say so, rather
+              than passing off 20 as the total. */}
+          {data.meta
+            ? `${data.meta.total} record${data.meta.total === 1 ? '' : 's'}`
+            : `${data.count} record${data.count === 1 ? '' : 's'}`}
         </p>
         {exportCsv ? (
           <Button
@@ -114,6 +138,10 @@ export function ReportView<K extends ReportKey>({
           </TableBody>
         </Table>
       </div>
+
+      {data.meta && onPageChange ? (
+        <PaginationBar meta={data.meta} onPageChange={onPageChange} />
+      ) : null}
     </div>
   );
 }

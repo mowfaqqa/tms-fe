@@ -1,9 +1,11 @@
 import { api } from './client';
 import type {
+  ActivityAction,
   AssignedPropertiesRow,
   Property,
   ReportResponse,
   StaffActivityRow,
+  StaffActivitySummary,
   Tenant,
 } from '@/lib/types';
 
@@ -46,12 +48,40 @@ export const ADMIN_ONLY_REPORTS: ReportKey[] = [
   'assigned-properties',
 ];
 
+/**
+ * Staff activity is the one paginated report — the audit log grows without
+ * bound, so the server pages it. The others return a bounded result set in
+ * full and ignore these params.
+ */
+export interface ReportParams {
+  page?: number;
+  limit?: number;
+  staffId?: string;
+  from?: string;
+  to?: string;
+  action?: ActivityAction;
+  entityType?: string;
+}
+
 export const reportsApi = {
   async get<K extends ReportKey>(
     key: K,
+    params: ReportParams = {},
   ): Promise<ReportResponse<ReportRowTypes[K]>> {
     const { data } = await api.get<ReportResponse<ReportRowTypes[K]>>(
       ENDPOINTS[key],
+      { params },
+    );
+    return data;
+  },
+
+  /** Action counts and activity span, for the same filters as `get`. */
+  async staffActivitySummary(
+    params: ReportParams = {},
+  ): Promise<StaffActivitySummary> {
+    const { data } = await api.get<StaffActivitySummary>(
+      '/reports/staff-activity/summary',
+      { params },
     );
     return data;
   },

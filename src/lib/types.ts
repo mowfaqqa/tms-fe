@@ -17,23 +17,51 @@ export type ReminderType =
   | 'THREE_MONTH'
   | 'ONE_MONTH'
   | 'FOURTEEN_DAY';
-export type ReminderStatus = 'PENDING' | 'TRIGGERED' | 'ACKNOWLEDGED';
+export type ReminderStatus =
+  | 'PENDING'
+  | 'TRIGGERED'
+  | 'ACKNOWLEDGED'
+  // Set when the tenancy expires while reminders are still pending, so they
+  // stop firing notices about a tenancy everyone already knows has lapsed.
+  | 'CANCELLED';
 export type NotificationChannel = 'DASHBOARD' | 'EMAIL';
 export type NoticeType = 'QUIT' | 'RENEWAL' | 'GENERAL';
 export type NoticeStatus = 'DRAFT' | 'ISSUED';
 export type ExpiringFilter = '6m' | '3m' | '30d' | 'expired';
 export type OccupancyStatus = 'VACANT' | 'OCCUPIED';
+export type IssueCategory =
+  | 'MAINTENANCE'
+  | 'TENANT_COMPLAINT'
+  | 'RENT_PAYMENT'
+  | 'SECURITY'
+  | 'LEGAL'
+  | 'OTHER';
+export type IssuePriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT';
+export type IssueStatus = 'OPEN' | 'IN_REVIEW' | 'RESOLVED' | 'REJECTED';
+
 export type ActivityAction =
   | 'PROPERTY_CREATED'
   | 'PROPERTY_UPDATED'
+  | 'PROPERTY_DELETED'
   | 'TENANT_CREATED'
   | 'TENANT_UPDATED'
+  | 'TENANT_DELETED'
   | 'STAFF_CREATED'
   | 'STAFF_UPDATED'
   | 'STAFF_DEACTIVATED'
   | 'STAFF_REACTIVATED'
   | 'PROPERTY_ASSIGNED'
-  | 'PROPERTY_UNASSIGNED';
+  | 'PROPERTY_UNASSIGNED'
+  | 'NOTICE_CREATED'
+  | 'NOTICE_UPDATED'
+  | 'NOTICE_ISSUED'
+  | 'NOTICE_DELETED'
+  | 'REMINDER_ACKNOWLEDGED'
+  | 'ISSUE_RAISED'
+  | 'ISSUE_UPDATED'
+  | 'ISSUE_STATUS_CHANGED'
+  // Actor is null on these — the nightly sweep, not a person.
+  | 'TENANCY_EXPIRED';
 
 export interface AuthUser {
   id: string;
@@ -137,6 +165,13 @@ export interface NotificationTenantRef {
   property?: PropertyRef;
 }
 
+export interface NotificationIssueRef {
+  id: string;
+  title: string;
+  status: IssueStatus;
+  priority: IssuePriority;
+}
+
 export interface AppNotification {
   id: string;
   channel: NotificationChannel;
@@ -145,8 +180,12 @@ export interface AppNotification {
   isRead: boolean;
   tenantId: string | null;
   reminderId: string | null;
+  issueId?: string | null;
+  /** Null means everyone in scope; a user id addresses one person. */
+  recipientId?: string | null;
   createdAt: string;
   tenant?: NotificationTenantRef | null;
+  issue?: NotificationIssueRef | null;
 }
 
 export interface Notice {
@@ -199,15 +238,49 @@ export interface StaffUser {
   staffAssignments: StaffAssignment[];
 }
 
+/**
+ * One field the actor changed. `from`/`to` come back as JSON primitives —
+ * strings for money and dates, since the server normalises them on write.
+ */
+export interface ActivityChange {
+  field: string;
+  from: unknown;
+  to: unknown;
+  /** Server-rendered, e.g. "rent amount: 500000 → 550000". */
+  description: string;
+}
+
 export interface ActivityLogEntry {
   id: string;
   actorId: string | null;
-  actor?: { id: string; fullName: string; email: string } | null;
+  actor?: {
+    id: string;
+    fullName: string;
+    email: string;
+    role?: Role;
+  } | null;
   action: ActivityAction;
   entityType: string;
   entityId: string | null;
   metadata: Record<string, unknown> | null;
   createdAt: string;
+  /**
+   * Rendered by the server, e.g. "Updated property 12 Adeola St (Unit 4) —
+   * changed unit number, label". Optional: rows written before the audit
+   * detail work have no metadata to build one from.
+   */
+  summary?: string;
+  entityLabel?: string | null;
+  changes?: ActivityChange[];
+  changeCount?: number;
+}
+
+/** Action counts and span for a staff member, from /staff/:id/activity. */
+export interface StaffActivitySummary {
+  totalActions: number;
+  byAction: { action: ActivityAction; count: number }[];
+  firstActionAt: string | null;
+  lastActionAt: string | null;
 }
 
 export interface UpcomingAction {
@@ -225,8 +298,11 @@ export interface ReportResponse<T = Tenant> {
   report: string;
   generatedAt: string;
   params: Record<string, unknown>;
+  /** Rows in this page. Not the overall total — see `meta.total`. */
   count: number;
   rows: T[];
+  /** Present only on paginated reports (currently staff activity). */
+  meta?: PaginationMeta;
 }
 
 export type StaffActivityRow = ActivityLogEntry;
