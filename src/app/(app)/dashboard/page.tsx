@@ -126,6 +126,14 @@ export default function DashboardPage() {
           value={metrics?.occupiedProperties ?? 0}
           icon={DoorOpen}
           href="/properties?occupancy=occupied"
+          // Holdovers count as occupied — the tenancy lapsed, the tenant did
+          // not leave — so the lapse is called out rather than hidden.
+          tone={(metrics?.holdingOverProperties ?? 0) > 0 ? 'warning' : 'default'}
+          subtext={
+            metrics && metrics.holdingOverProperties > 0
+              ? `${metrics.holdingOverProperties} on an expired tenancy`
+              : undefined
+          }
           loading={isLoading}
         />
         <MetricCard
@@ -133,7 +141,7 @@ export default function DashboardPage() {
           value={metrics?.vacantProperties ?? 0}
           icon={DoorOpen}
           href="/properties?occupancy=vacant"
-          tone="warning"
+          subtext="Confirmed empty"
           loading={isLoading}
         />
         <MetricCard

@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import {
   propertiesApi,
+  type ConfirmVacancyPayload,
   type PropertyListParams,
   type PropertyPayload,
 } from '@/lib/api/properties';
@@ -64,6 +65,41 @@ export function useUpdateProperty(id: string) {
       invalidate();
       qc.invalidateQueries({ queryKey: queryKeys.properties.detail(id) });
     },
+  });
+}
+
+/**
+ * Confirming or reversing a vacancy moves a tenancy too (an early move-out
+ * closes the term), so the tenant views are dropped alongside the property
+ * ones — otherwise the tenant list keeps showing the tenancy as running.
+ */
+function useInvalidateVacancyViews(id: string) {
+  const invalidate = useInvalidatePropertyViews();
+  const qc = useQueryClient();
+  return () => {
+    invalidate();
+    qc.invalidateQueries({ queryKey: queryKeys.properties.detail(id) });
+    qc.invalidateQueries({ queryKey: queryKeys.properties.tenants(id) });
+    qc.invalidateQueries({ queryKey: ['tenants'] });
+    qc.invalidateQueries({ queryKey: ['reports'] });
+    qc.invalidateQueries({ queryKey: ['notifications'] });
+  };
+}
+
+export function useConfirmVacancy(id: string) {
+  const invalidate = useInvalidateVacancyViews(id);
+  return useMutation({
+    mutationFn: (payload: ConfirmVacancyPayload) =>
+      propertiesApi.confirmVacancy(id, payload),
+    onSuccess: invalidate,
+  });
+}
+
+export function useClearVacancy(id: string) {
+  const invalidate = useInvalidateVacancyViews(id);
+  return useMutation({
+    mutationFn: () => propertiesApi.clearVacancy(id),
+    onSuccess: invalidate,
   });
 }
 

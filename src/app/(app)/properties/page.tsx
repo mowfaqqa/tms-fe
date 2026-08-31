@@ -23,7 +23,7 @@ import { useProperties } from '@/lib/hooks/use-properties';
 import { useDebounce } from '@/lib/hooks/use-debounce';
 import { useAuth } from '@/lib/auth/auth-context';
 
-type OccupancyOption = 'all' | 'vacant' | 'occupied';
+type OccupancyOption = 'all' | 'vacant' | 'occupied' | 'occupied_expired';
 
 function PropertiesContent() {
   const router = useRouter();
@@ -99,13 +99,16 @@ function PropertiesContent() {
                 setPage(1);
               }}
             >
-              <SelectTrigger className="sm:w-44">
+              <SelectTrigger className="sm:w-52">
                 <SelectValue placeholder="Occupancy" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All properties</SelectItem>
                 <SelectItem value="vacant">Vacant</SelectItem>
                 <SelectItem value="occupied">Occupied</SelectItem>
+                <SelectItem value="occupied_expired">
+                  Tenancy expired
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
