@@ -61,9 +61,9 @@ const propertyColumns: ReportColumn<Property>[] = [
   },
   { header: 'Label', render: (p) => p.label ?? '—' },
   {
-    header: 'Active tenants',
+    header: 'Tenants',
     align: 'right',
-    render: (p) => p.activeTenantCount,
+    render: (p) => p.occupantCount,
   },
   {
     header: 'Occupancy',

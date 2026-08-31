@@ -5,13 +5,21 @@ export interface PropertyListParams {
   page?: number;
   limit?: number;
   search?: string;
-  occupancy?: 'vacant' | 'occupied';
+  occupancy?: 'vacant' | 'occupied' | 'occupied_expired';
 }
 
 export interface PropertyPayload {
   address: string;
   unitNumber: string;
   label?: string;
+}
+
+export interface ConfirmVacancyPayload {
+  /** When the property was handed back. Defaults to now server-side. */
+  vacatedAt?: string;
+  note?: string;
+  /** Close a still-running tenancy too — an early move-out. */
+  endRunningTenancy?: boolean;
 }
 
 export const propertiesApi = {
@@ -42,6 +50,26 @@ export const propertiesApi = {
     payload: Partial<PropertyPayload>,
   ): Promise<Property> {
     const { data } = await api.patch<Property>(`/properties/${id}`, payload);
+    return data;
+  },
+
+  /**
+   * Confirms the property empty. Nothing else makes a let property vacant —
+   * a tenancy expiring only means the term lapsed.
+   */
+  async confirmVacancy(
+    id: string,
+    payload: ConfirmVacancyPayload,
+  ): Promise<Property> {
+    const { data } = await api.post<Property>(
+      `/properties/${id}/vacancy`,
+      payload,
+    );
+    return data;
+  },
+
+  async clearVacancy(id: string): Promise<Property> {
+    const { data } = await api.delete<Property>(`/properties/${id}/vacancy`);
     return data;
   },
 

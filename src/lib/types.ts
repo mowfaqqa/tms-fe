@@ -28,7 +28,12 @@ export type NotificationChannel = 'DASHBOARD' | 'EMAIL';
 export type NoticeType = 'QUIT' | 'RENEWAL' | 'GENERAL';
 export type NoticeStatus = 'DRAFT' | 'ISSUED';
 export type ExpiringFilter = '6m' | '3m' | '30d' | 'expired';
-export type OccupancyStatus = 'VACANT' | 'OCCUPIED';
+/**
+ * Vacancy is confirmed by a person, never inferred from a tenancy ending.
+ * OCCUPIED_EXPIRED is the in-between the system used to collapse into VACANT:
+ * the term has lapsed but the tenant is still in the unit.
+ */
+export type OccupancyStatus = 'VACANT' | 'OCCUPIED' | 'OCCUPIED_EXPIRED';
 export type IssueCategory =
   | 'MAINTENANCE'
   | 'TENANT_COMPLAINT'
@@ -61,6 +66,8 @@ export type ActivityAction =
   | 'ISSUE_UPDATED'
   | 'ISSUE_STATUS_CHANGED'
   // Actor is null on these — the nightly sweep, not a person.
+  | 'PROPERTY_VACANCY_CONFIRMED'
+  | 'PROPERTY_VACANCY_CLEARED'
   | 'TENANCY_EXPIRED';
 
 export interface AuthUser {
@@ -80,10 +87,17 @@ export interface Property {
   address: string;
   unitNumber: string;
   label: string | null;
+  /** Tenancies still running. Zero on a property whose tenant is holding over. */
   activeTenantCount: number;
+  /** Everyone still in the property, running tenancy or lapsed-and-unconfirmed. */
+  occupantCount: number;
   occupancyStatus: OccupancyStatus;
-  /** A current tenant is on a part-payment arrangement. */
+  /** A tenant in occupation is on a part-payment arrangement. */
   hasPartPayment: boolean;
+  /** Set only when someone confirmed the property empty. */
+  vacatedAt: string | null;
+  vacancyNote: string | null;
+  vacancyConfirmedById: string | null;
   createdById: string | null;
   createdAt: string;
   updatedAt: string;
@@ -311,6 +325,8 @@ export interface DashboardMetrics {
   expiredTenancies: number;
   totalProperties: number;
   occupiedProperties: number;
+  /** Occupied on a tenancy that has lapsed — renew or serve notice. */
+  holdingOverProperties: number;
   vacantProperties: number;
   /** Every part-payment arrangement, settled or not. */
   partPaymentTenancies: number;

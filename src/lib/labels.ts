@@ -58,7 +58,13 @@ export const NOTICE_STATUS_LABELS: Record<NoticeStatus, string> = {
   ISSUED: 'Issued',
 };
 
-type BadgeTone = 'default' | 'secondary' | 'outline' | 'destructive' | 'success';
+type BadgeTone =
+  | 'default'
+  | 'secondary'
+  | 'outline'
+  | 'destructive'
+  | 'success'
+  | 'warning';
 
 export const TENANT_STATUS_TONE: Record<TenantStatus, BadgeTone> = {
   ACTIVE: 'success',
@@ -81,11 +87,15 @@ export const NOTICE_STATUS_TONE: Record<NoticeStatus, BadgeTone> = {
 export const OCCUPANCY_STATUS_LABELS: Record<OccupancyStatus, string> = {
   VACANT: 'Vacant',
   OCCUPIED: 'Occupied',
+  // Not "expired": the property is still lived in. What has expired is the
+  // tenancy, and that is the thing needing action.
+  OCCUPIED_EXPIRED: 'Occupied · tenancy expired',
 };
 
 export const OCCUPANCY_STATUS_TONE: Record<OccupancyStatus, BadgeTone> = {
   VACANT: 'secondary',
   OCCUPIED: 'success',
+  OCCUPIED_EXPIRED: 'warning',
 };
 
 export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
@@ -109,6 +119,8 @@ export const ACTIVITY_ACTION_LABELS: Record<ActivityAction, string> = {
   ISSUE_RAISED: 'Issue reported',
   ISSUE_UPDATED: 'Issue updated',
   ISSUE_STATUS_CHANGED: 'Issue status changed',
+  PROPERTY_VACANCY_CONFIRMED: 'Vacancy confirmed',
+  PROPERTY_VACANCY_CLEARED: 'Vacancy reversed',
   TENANCY_EXPIRED: 'Tenancy expired',
 };
 

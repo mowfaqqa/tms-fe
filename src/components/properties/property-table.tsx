@@ -23,7 +23,7 @@ export function PropertyTable({ properties }: { properties: Property[] }) {
           <TableRow>
             <TableHead>Property</TableHead>
             <TableHead>Landlord</TableHead>
-            <TableHead className="text-right">Active tenants</TableHead>
+            <TableHead className="text-right">Tenants</TableHead>
             <TableHead>Occupancy</TableHead>
           </TableRow>
         </TableHeader>
@@ -44,7 +44,7 @@ export function PropertyTable({ properties }: { properties: Property[] }) {
                 {p.label ?? '—'}
               </TableCell>
               <TableCell className="text-right tabular-nums">
-                {p.activeTenantCount}
+                {p.occupantCount}
               </TableCell>
               <TableCell>
                 <div className="flex flex-wrap gap-1">
